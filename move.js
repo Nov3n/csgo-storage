@@ -4,6 +4,7 @@ function isAutoMovein(item) {
     return (OriginItemUtil.isClutchCase(item)
         || OriginItemUtil.isFractureCase(item)
         || OriginItemUtil.isCSGO20Case(item)
+        || OriginItemUtil.isPrisma2Case(item)
         || OriginItemUtil.isSnakeBiteCase(item)
         || OriginItemUtil.isRio2022SignatureCapsules(item)
         || OriginItemUtil.isDust2SouvenirPackage(item)
@@ -55,7 +56,7 @@ csgo.on("connectedToGC", function (details) {
         }
         // 找到符合自动移入库存条件的物品
         if (isAutoMovein(item)) {
-            logger.info("找到自动移入物品, id: " + item.id);
+            logger.info("找到自动移入物品, id: " + item.id + ", def_index: " + item.def_index);
             movein_items.push(item);
         }
     });
@@ -83,7 +84,7 @@ csgo.on("itemAcquired", (item) => {
         casket_helper.moveinTaskCB(item.def_index, tradable, 1);
     }
     if (!OriginItemUtil.isInCasket(item)) {
-        logger.info("获取物品, 物品def_index= " + item.def_index +", 物品可交易= " + OriginItemUtil.isTradable(item) +", 是否自动移入组件= " + isAutoMovein(item));
+        logger.info("获取物品, 物品def_index= " + item.def_index + ", 物品可交易= " + OriginItemUtil.isTradable(item) + ", 是否自动移入组件= " + isAutoMovein(item));
     }
     casket_helper.emit("itemAcquired", CsgoItem.fromOriginItem(item));
 });

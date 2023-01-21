@@ -2,51 +2,82 @@ const EventEmitter = require("events").EventEmitter;
 
 class OriginItemUtil {
     /**
-     * Is clutch case
+     * 命悬一线武器箱
      */
     static isClutchCase(item) {
         return item.def_index != null && item.def_index == 4471;
     }
 
     /**
-     * Is fracture case
+     * 裂空武器箱
      */
     static isFractureCase(item) {
         return item.def_index != null && item.def_index == 4698;
     }
 
     /**
-     * Is 20th anniversary case
+     * csgo20周年武器箱
      */
     static isCSGO20Case(item) {
         return item.def_index != null && item.def_index == 4669;
     }
 
+    /**
+     * 棱彩2号武器箱
+     */
+    static isPrisma2Case(item) {
+        return item.def_index != null && item.def_index == 4695;
+    }
+
+    /**
+     * 是否在组件内
+     */
     static isInCasket(item) {
         return item.casket_id != null;
     }
 
+    /**
+     * 是否可交易
+     */
     static isTradable(item) {
         return item.tradable_after != null && item.tradable_after < new Date();
     }
 
+    /**
+     * 是否是组件
+     */
     static isCasket(item) {
         return item.casket_contained_item_count != null;
     }
 
+    /**
+     * 是否是dust2纪念包
+     */
     static isDust2SouvenirPackage(item) {
         return item.def_index != null && item.def_index == 4862;
     }
 
+    /**
+     * 是否是mirage纪念包
+     */
     static isMirageSouvenirPackage(item) {
         return item.def_index != null && item.def_index == 4861;
     }
 
-    // 里约2022major签名胶囊
+    /**
+     * 里约2022major签名胶囊
+     * 4867: 传奇组签名胶囊
+     * 4868: 挑战组签名胶囊
+     * 4869: 竞争组签名胶囊
+     * 4870: 冠军组签名胶囊
+     */
     static isRio2022SignatureCapsules(item) {
         return item.def_index != null && item.def_index >= 4867 && item.def_index <= 4870;
     }
 
+    /**
+     * 是否是蛇噬武器箱
+     */
     static isSnakeBiteCase(item) {
         return item.def_index != null && item.def_index == 4747;
     }
