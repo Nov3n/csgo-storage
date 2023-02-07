@@ -34,7 +34,7 @@ const logger = log4js.getLogger("default");
 
 let client = new SteamUser();
 let csgo = new GlobalOffensive(client);
-csgo.setMaxListeners(30);
+csgo.setMaxListeners(200);
 let casket_helper = new CasketHelper(csgo, 2000, 100, logger);
 
 
@@ -94,17 +94,20 @@ csgo.on("itemRemoved", (item) => {
 });
 
 csgo.on("disconnectedFromGC", () => {
-    logger.info("csgo断开连接, 尝试重连")
-    client.gamesPlayed([730], true);
+    logger.info("csgo断开连接, 程序退出")
+    process.exit();
 });
 
 setInterval(function () {
     casket_helper.emit("printTest");
 }, 20000)
 
-setInterval(() => {
-    casket_helper.flushOutterItem(isAutoMovein)
-}, 30000);
+// 物品库存数量越多, 则需要的timeout越大
+setTimeout(() => {
+    setInterval(() => {
+        casket_helper.flushOutterItem(isAutoMovein)
+    }, 30000)
+}, 100000);
 
 server.on("request", (req, res) => {
     const { query, pathname } = url.parse(req.url, true)

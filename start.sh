@@ -21,7 +21,7 @@ if [ ${op} == "restart" ];then
 elif [ ${op} == "start" ];then
     nohup node ${js_file} >/dev/null 2>&1 &
 elif [ ${op} == "stop" ];then
-    kill_process '${js_file}'
+    kill_process "${js_file}"
 fi
 
 
