@@ -294,12 +294,12 @@ class CasketHelper extends EventEmitter {
         });
     }
 
-    listInnerItemCB(def_index, tradable = true, res = null) {
+    listInnerItemCB(def_index, tradable = 1, res = null) {
         let items_num = 0;
         for (let key of this.#inner_items.keys()) {
             if (
                 this.#inner_items.get(key).def_index == def_index
-                && this.#inner_items.get(key).tradable() == tradable
+                && CasketHelper.checkTradable(this.#inner_items.get(key), tradable)
             ) {
                 items_num++;
             }
@@ -310,12 +310,12 @@ class CasketHelper extends EventEmitter {
         return items_num;
     }
 
-    listOutterItemCB(def_index, tradable = true, res = null) {
+    listOutterItemCB(def_index, tradable = 1, res = null) {
         let items_num = 0;
         for (let key of this.#outter_items.keys()) {
             if (
                 this.#outter_items.get(key).def_index == def_index
-                && this.#outter_items.get(key).tradable() == tradable
+                && CasketHelper.checkTradable(this.#outter_items.get(key), tradable)
             ) {
                 items_num++;
             }
@@ -326,14 +326,15 @@ class CasketHelper extends EventEmitter {
         return items_num
     }
 
-    moveinTaskCB(def_index, tradable = true, move_num = 0) {
+    moveinTaskCB(def_index, tradable = 1, move_num = 0) {
         console.log("recv moveinTask, def_index= " + def_index + ", tradable= " + tradable)
         for (let key of this.#outter_items.keys()) {
             if (move_num <= 0) {
                 break;
             }
             var my_item = this.#outter_items.get(key);
-            if (my_item.def_index == def_index && my_item.tradable() == tradable) {
+            if (my_item.def_index == def_index
+                && CasketHelper.checkTradable(my_item, tradable)) {
                 move_num--;
                 this.#inner_items.set(my_item.id, my_item);
                 this.#outter_items.delete(my_item.id);
@@ -354,7 +355,7 @@ class CasketHelper extends EventEmitter {
         console.log("remain unmoved movein_num:", move_num);
     }
 
-    moveoutTaskCB(def_index, tradable = true, move_num = 0) {
+    moveoutTaskCB(def_index, tradable = 1, move_num = 0) {
         console.log("innerItems.size= ", this.#inner_items.size);
         for (let my_item_key of this.#inner_items.keys()) {
             if (move_num <= 0) {
@@ -363,7 +364,7 @@ class CasketHelper extends EventEmitter {
             var my_item = this.#inner_items.get(my_item_key);
             if (
                 my_item.def_index == def_index
-                && my_item.tradable() == tradable
+                && CasketHelper.checkTradable(my_item, tradable)
                 && this.#outter_items.size + this.#caskets.size < CsgoCasketMaxSize
             ) {
                 console.log("moveoutTaskExecuting,item.def_index=", my_item.def_index);
@@ -446,6 +447,13 @@ class CasketHelper extends EventEmitter {
     // @param item csgo原始物品类型
     static isCasket(item) {
         return item.casket_contained_item_count != null;
+    }
+
+    static checkTradable(item, need_tradable) {
+        if (need_tradable == 2) {
+            return true;
+        }
+        return item.tradable() == Boolean(need_tradable);
     }
 }
 

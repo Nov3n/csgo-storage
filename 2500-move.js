@@ -94,8 +94,8 @@ csgo.on("itemRemoved", (item) => {
 });
 
 csgo.on("disconnectedFromGC", () => {
-    logger.info("csgo断开连接, 程序退出")
-    process.exit();
+    logger.info("csgo断开连接, 尝试重连")
+    client.gamesPlayed([730], true);
 });
 
 setInterval(function () {
@@ -112,9 +112,9 @@ server.on("request", (req, res) => {
         res.end("Parameter Error\n");
     } else {
         let def_index = parseInt(query.def_index);
-        let tradable = true;
-        if (query.tradable && query.tradable == "0") {
-            tradable = false;
+        let tradable = 1;
+        if (query.tradable) {
+            tradable = parseInt(query.tradable);
         }
         let move_num = 0;
         if (query.move_num) {

@@ -14,13 +14,14 @@ op="start"
 if [ $# -eq 1 ];then
     op=$1
 fi
+js_file="2500-move.js"
 if [ ${op} == "restart" ];then
-    kill_process 'move.js'
-    nohup node move.js >/dev/null 2>&1 &
+    kill_process "${js_file}"
+    nohup node ${js_file} >/dev/null 2>&1 &
 elif [ ${op} == "start" ];then
-    nohup node move.js >/dev/null 2>&1 &
+    nohup node ${js_file} >/dev/null 2>&1 &
 elif [ ${op} == "stop" ];then
-    kill_process 'move.js'
+    kill_process '${js_file}'
 fi
 
 
