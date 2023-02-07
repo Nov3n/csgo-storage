@@ -281,17 +281,19 @@ class CasketHelper extends EventEmitter {
         this.createCasket(casket_id);
         var casket = this.#caskets.get(casket_id);
         var inner_items = this.#inner_items;
-        this.#csgo.getCasketContents(casket_id, (err, items) => {
-            if (err == null) {
-                items.forEach(function (item) {
-                    var my_item = CsgoItem.fromOriginItem(item);
-                    casket.addItem(my_item);
-                    if (!inner_items.has(my_item.id)) {
-                        inner_items.set(my_item.id, my_item);
-                    }
-                })
-            }
-        });
+        setTimeout(() => {
+            this.#csgo.getCasketContents(casket_id, (err, items) => {
+                if (err == null) {
+                    items.forEach(function (item) {
+                        var my_item = CsgoItem.fromOriginItem(item);
+                        casket.addItem(my_item);
+                        if (!inner_items.has(my_item.id)) {
+                            inner_items.set(my_item.id, my_item);
+                        }
+                    })
+                }
+            });
+        }, Math.random() * 5000);
     }
 
     listInnerItemCB(def_index, tradable = 1, res = null) {

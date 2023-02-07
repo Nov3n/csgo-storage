@@ -23,6 +23,7 @@ const GlobalOffensive = require("globaloffensive");
 const fs = require("fs");
 const log4js = require("log4js");
 const logCfg = require("./conf/log_config.json");
+const accountCfg = require("./conf/account.json");
 const { CsgoItem } = require("./util/item_util");
 const CasketHelper = require("./util/item_util").CasketHelper;
 const OriginItemUtil = require("./util/item_util").OriginItemUtil;
@@ -72,17 +73,13 @@ client.on("loggedOn", function (details) {
 
 // 自动读取验证码登陆steam
 client.logOn({
-    accountName: "a2500664779",
-    password: "Aa1bcptdtptp",
-    twoFactorCode: fs.readFileSync("../csgo/product/code.txt").toString(),
+    accountName: accountCfg.steam_username,
+    password: accountCfg.steam_password,
+    twoFactorCode: fs.readFileSync(accountCfg.two_factor_code_path).toString(),
 });
 
 // 获取了新的物品
 csgo.on("itemAcquired", (item) => {
-    if (isAutoMovein(item)) {
-        var tradable = OriginItemUtil.isTradable(item);
-        casket_helper.moveinTaskCB(item.def_index, tradable, 1);
-    }
     if (!OriginItemUtil.isInCasket(item)) {
         logger.info("获取物品, 物品def_index= " + item.def_index + ", 物品可交易= " + OriginItemUtil.isTradable(item) + ", 是否自动移入组件= " + isAutoMovein(item));
     }
@@ -107,7 +104,7 @@ setTimeout(() => {
     setInterval(() => {
         casket_helper.flushOutterItem(isAutoMovein)
     }, 30000)
-}, 100000);
+}, 60000);
 
 server.on("request", (req, res) => {
     const { query, pathname } = url.parse(req.url, true)
