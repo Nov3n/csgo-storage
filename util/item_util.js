@@ -232,7 +232,7 @@ class CasketHelper extends EventEmitter {
                 this.#logger.info(
                     "物品移入库存组件, 物品id:" + task.item_id +
                     ", 组件id:" + task.casket_id +
-                    ", 剩余移入任务数:" + this.#moveinTasks.size
+                    ", 剩余移入任务数:" + Number(this.#moveinTasks.size - 1)
                 );
             }
             this.#moveinTasks.delete(item.id);
@@ -256,7 +256,7 @@ class CasketHelper extends EventEmitter {
                 this.#logger.info(
                     "物品移出库存组件, 物品id:" + task.item_id +
                     ", 组件id:" + task.casket_id +
-                    ", 剩余移出任务数:" + this.#moveoutTasks.size
+                    ", 剩余移出任务数:" + Number(this.#moveoutTasks.size - 1)
                 );
             }
             this.#moveoutTasks.delete(my_item.id);
