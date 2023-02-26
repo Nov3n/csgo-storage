@@ -24,4 +24,14 @@ elif [ ${op} == "stop" ];then
     kill_process "${js_file}"
 fi
 
-
+if [ ${op} == "daemon" ];then
+    $(  while true;
+        do
+            pid=$(ps aux | grep ${js_file} | grep -v grep | awk '{print $2}')
+            if [ "${pid}" == "" ];then
+                nohup node ${js_file} >/dev/null 2>&1 &
+            fi
+            sleep 2s
+        done
+    ) &
+fi

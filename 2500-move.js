@@ -6,9 +6,14 @@ function isAutoMovein(item) {
         || OriginItemUtil.isCSGO20Case(item)
         || OriginItemUtil.isPrisma2Case(item)
         || OriginItemUtil.isSnakeBiteCase(item)
+        || OriginItemUtil.isStockH2022TeamCapsules(item)
         || OriginItemUtil.isRio2022SignatureCapsules(item)
-        || OriginItemUtil.isDust2SouvenirPackage(item)
-        || OriginItemUtil.isMirageSouvenirPackage(item))
+        || OriginItemUtil.isRio2022TeamCapsules(item)
+        || OriginItemUtil.isRioDust2SouvenirPackage(item)
+        || OriginItemUtil.isRIoMirageSouvenirPackage(item)
+        || OriginItemUtil.isEspionageStickerCapsule(item)
+        || OriginItemUtil.isUltimateMusicKit(item)
+        || OriginItemUtil.isRevolutionCase(item))
         && OriginItemUtil.isInCasket(item) == false
         && OriginItemUtil.isTradable(item) == false
 }
@@ -51,7 +56,7 @@ csgo.on("connectedToGC", function (details) {
         if (OriginItemUtil.isCasket(item)) {
             logger.info("找到库存组件, 名称: " + item.custom_name + ", id: " + item.id + ", 已经使用空间: " + item.casket_contained_item_count);
             caskets.push(item);
-            casket_helper.emit("casketFound", item.id);
+            casket_helper.emit("casketFound", item.id, item.casket_contained_item_count);
         } else {
             casket_helper.emit("itemFound", CsgoItem.fromOriginItem(item));
         }
@@ -82,6 +87,7 @@ client.logOn({
 csgo.on("itemAcquired", (item) => {
     if (!OriginItemUtil.isInCasket(item)) {
         logger.info("获取物品, 物品def_index= " + item.def_index + ", 物品可交易= " + OriginItemUtil.isTradable(item) + ", 是否自动移入组件= " + isAutoMovein(item));
+        console.log("物品id:" + item.def_index)
     }
     casket_helper.emit("itemAcquired", CsgoItem.fromOriginItem(item));
 });
@@ -99,12 +105,12 @@ setInterval(function () {
     casket_helper.emit("printTest");
 }, 20000)
 
-// 物品库存数量越多, 则需要的timeout越大
+// 库存组件保留origin_size可以在获取物品信息未完成时直接执行入组件和出组件操作
 setTimeout(() => {
     setInterval(() => {
         casket_helper.flushOutterItem(isAutoMovein)
-    }, 30000)
-}, 60000);
+    }, 3000)
+}, 5000);
 
 server.on("request", (req, res) => {
     const { query, pathname } = url.parse(req.url, true)
@@ -136,17 +142,10 @@ server.on("request", (req, res) => {
         else if (pathname === "/listOutterItem") {
             server.emit("listOutterItem", def_index, tradable, res);
         }
+        else if (pathname === "/status") {
+            server.emit("status", res);
+        }
     }
-});
-
-server.on("moveinTask", (def_index, tradable, move_num) => {
-    logger.info("收到movein请求, def_index=", def_index, ", tradable=", tradable, ", move_num=", move_num);
-    casket_helper.emit("moveinTask", def_index, tradable, move_num);
-});
-
-server.on("moveoutTask", (def_index, tradable, move_num) => {
-    logger.info("收到moveout请求, def_index=", def_index, ", tradable=", tradable, ", move_num=", move_num);
-    casket_helper.emit("moveoutTask", def_index, tradable, move_num);
 });
 
 server.on("listInnerItem", (def_index, tradable, res) => {
@@ -159,5 +158,19 @@ server.on("listOutterItem", (def_index, tradable, res) => {
     casket_helper.emit("listOutterItem", def_index, tradable, res);
 });
 
-server.listen(3000);
+server.on("moveinTask", (def_index, tradable, move_num) => {
+    logger.info("收到movein请求, def_index=", def_index, ", tradable=", tradable, ", move_num=", move_num);
+    casket_helper.emit("moveinTask", def_index, tradable, move_num);
+});
 
+server.on("moveoutTask", (def_index, tradable, move_num) => {
+    logger.info("收到moveout请求, def_index=", def_index, ", tradable=", tradable, ", move_num=", move_num);
+    casket_helper.emit("moveoutTask", def_index, tradable, move_num);
+});
+
+server.on("status", (res) => {
+    logger.info("收到status请求");
+    casket_helper.emit("status", res);
+});
+
+server.listen(accountCfg.storage_port);

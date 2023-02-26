@@ -1,4 +1,5 @@
 const EventEmitter = require("events").EventEmitter;
+const itemInfo = require("../conf/item_info.json");
 
 class OriginItemUtil {
     /**
@@ -6,13 +7,6 @@ class OriginItemUtil {
      */
     static isClutchCase(item) {
         return item.def_index != null && item.def_index == 4471;
-    }
-
-    /**
-     * 裂空武器箱
-     */
-    static isFractureCase(item) {
-        return item.def_index != null && item.def_index == 4698;
     }
 
     /**
@@ -27,6 +21,93 @@ class OriginItemUtil {
      */
     static isPrisma2Case(item) {
         return item.def_index != null && item.def_index == 4695;
+    }
+
+    /**
+     * 裂空武器箱
+     */
+    static isFractureCase(item) {
+        return item.def_index != null && item.def_index == 4698;
+    }
+
+    /**
+     * 是否是蛇噬武器箱
+     */
+    static isSnakeBiteCase(item) {
+        return item.def_index != null && item.def_index == 4747;
+    }
+
+    /**
+     * 斯德哥尔摩2022major签名胶囊
+     * 4803: 传奇组队标胶囊
+     * 4804: 挑战组队标胶囊
+     * 4805: 竞争组队标胶囊
+     */
+    static isStockH2022TeamCapsules(item) {
+        return item.def_index != null && item.def_index >= 4803 && item.def_index <= 4805;
+    }
+
+    /**
+     * 里约2022major签名胶囊
+     * 4857: 传奇组队标胶囊
+     * 4858: 挑战组队标胶囊
+     * 4859: 竞争组队标胶囊
+     */
+    static isRio2022TeamCapsules(item) {
+        return item.def_index != null && item.def_index >= 4857 && item.def_index <= 4859;
+    }
+
+    /**
+     * 是否是inferno纪念包
+     */
+    static isRIoInfernoSouvenirPackage(item) {
+        return item.def_index != null && item.def_index == 4860;
+    }
+
+    /**
+     * 是否是mirage纪念包
+     */
+    static isRIoMirageSouvenirPackage(item) {
+        return item.def_index != null && item.def_index == 4861;
+    }
+
+    /**
+     * 是否是dust2纪念包
+     */
+    static isRioDust2SouvenirPackage(item) {
+        return item.def_index != null && item.def_index == 4862;
+    }
+
+    /**
+     * 里约2022major签名胶囊
+     * 4867: 传奇组签名胶囊
+     * 4868: 挑战组签名胶囊
+     * 4869: 竞争组签名胶囊
+     * 4870: 冠军组签名胶囊
+     */
+    static isRio2022SignatureCapsules(item) {
+        return item.def_index != null && item.def_index >= 4867 && item.def_index <= 4870;
+    }
+
+    /**
+     * 是否是2023.2 间谍印花胶囊
+     */
+    static isEspionageStickerCapsule(item) {
+        return item.def_index != null && item.def_index == 4879;
+    }
+
+    /**
+     * 是否是2023.2 变革武器箱
+     */
+    static isRevolutionCase(item) {
+        return item.def_index != null && item.def_index == 4880;
+    }
+
+    /**
+     * 是否是2023.2 音乐盒
+     */
+    static isUltimateMusicKit(item) {
+        return item.def_index != null && item.def_index == 1314;
     }
 
     /**
@@ -49,38 +130,6 @@ class OriginItemUtil {
     static isCasket(item) {
         return item.casket_contained_item_count != null;
     }
-
-    /**
-     * 是否是dust2纪念包
-     */
-    static isDust2SouvenirPackage(item) {
-        return item.def_index != null && item.def_index == 4862;
-    }
-
-    /**
-     * 是否是mirage纪念包
-     */
-    static isMirageSouvenirPackage(item) {
-        return item.def_index != null && item.def_index == 4861;
-    }
-
-    /**
-     * 里约2022major签名胶囊
-     * 4867: 传奇组签名胶囊
-     * 4868: 挑战组签名胶囊
-     * 4869: 竞争组签名胶囊
-     * 4870: 冠军组签名胶囊
-     */
-    static isRio2022SignatureCapsules(item) {
-        return item.def_index != null && item.def_index >= 4867 && item.def_index <= 4870;
-    }
-
-    /**
-     * 是否是蛇噬武器箱
-     */
-    static isSnakeBiteCase(item) {
-        return item.def_index != null && item.def_index == 4747;
-    }
 }
 
 // Date 2023.1.15
@@ -89,14 +138,25 @@ const CsgoCasketMaxSize = 1000;
 class CsgoCasket {
     #items;
     #id;
+    #origin_size;
 
-    constructor(id) {
+    constructor(id, size = -1) {
         this.#items = new Map();
         this.#id = id;
+        this.#origin_size = size;
     }
 
     size() {
-        return this.#items.size;
+        if (this.#origin_size != -1) {
+            return this.#origin_size;
+        }
+        else {
+            return this.#items.size;
+        }
+    }
+
+    clear_origin_size() {
+        this.#origin_size = -1;
     }
 
     id() {
@@ -104,20 +164,30 @@ class CsgoCasket {
     }
 
     addable() {
-        return this.#items.size < CsgoCasketMaxSize;
+        return this.size() < CsgoCasketMaxSize;
     }
 
     addItem(my_item) {
         if (this.addable() && !this.hasItem(my_item)) {
             my_item.casket_id = this.#id;
             this.#items.set(my_item.id, my_item);
+            if (this.#origin_size != -1) {
+                this.#origin_size++;
+            }
         }
+    }
+
+    addOriginItem(my_item) {
+        this.#items.set(my_item.id, my_item);
     }
 
     removeItem(my_item) {
         if (this.hasItem(my_item.id)) {
             this.#items.delete(my_item.id);
             my_item.casket_id = null;
+            if (this.#origin_size != -1) {
+                this.#origin_size--;
+            }
         }
     }
 
@@ -179,6 +249,7 @@ class CasketHelper extends EventEmitter {
         this.on("listOutterItem", this.listOutterItemCB);
         this.on("moveinTask", this.moveinTaskCB);
         this.on("moveoutTask", this.moveoutTaskCB);
+        this.on("status", this.statusCB);
 
         setInterval(() => {
             this.executeTasks();
@@ -271,14 +342,14 @@ class CasketHelper extends EventEmitter {
         if (CasketHelper.isInCasket(my_item)) {
             this.addInnerItem(my_item);
             this.createCasket(my_item.casket_id);
-            this.#caskets.get(my_item.casket_id).addItem(my_item);
+            this.#caskets.get(my_item.casket_id).addOriginItem(my_item);
         } else {
             this.addOutterItem(my_item);
         }
     }
 
-    casketFoundCB(casket_id) {
-        this.createCasket(casket_id);
+    casketFoundCB(casket_id, size = -1) {
+        this.createCasket(casket_id, size);
         var casket = this.#caskets.get(casket_id);
         var inner_items = this.#inner_items;
         setTimeout(() => {
@@ -286,21 +357,22 @@ class CasketHelper extends EventEmitter {
                 if (err == null) {
                     items.forEach(function (item) {
                         var my_item = CsgoItem.fromOriginItem(item);
-                        casket.addItem(my_item);
+                        casket.addOriginItem(my_item);
                         if (!inner_items.has(my_item.id)) {
                             inner_items.set(my_item.id, my_item);
                         }
-                    })
+                    });
+                    casket.clear_origin_size();
                 }
             });
-        }, Math.random() * 5000);
+        }, Math.random() * 20000);
     }
 
     listInnerItemCB(def_index, tradable = 1, res = null) {
         let items_num = 0;
         for (let key of this.#inner_items.keys()) {
             if (
-                this.#inner_items.get(key).def_index == def_index
+                CasketHelper.checkDefIndex(this.#inner_items.get(key), def_index)
                 && CasketHelper.checkTradable(this.#inner_items.get(key), tradable)
             ) {
                 items_num++;
@@ -316,7 +388,7 @@ class CasketHelper extends EventEmitter {
         let items_num = 0;
         for (let key of this.#outter_items.keys()) {
             if (
-                this.#outter_items.get(key).def_index == def_index
+                CasketHelper.checkDefIndex(this.#outter_items.get(key), def_index)
                 && CasketHelper.checkTradable(this.#outter_items.get(key), tradable)
             ) {
                 items_num++;
@@ -384,6 +456,31 @@ class CasketHelper extends EventEmitter {
         console.log("remain unmoved moveout_num:", move_num);
     }
 
+    statusCB(res = null) {
+        let statusMap = new Map();
+        for (let my_item_key of this.#inner_items.keys()) {
+            var my_item = this.#inner_items.get(my_item_key);
+            if (statusMap.has(my_item.def_index)) {
+                statusMap.set(my_item.def_index, statusMap.get(my_item.def_index) + 1);
+            } else {
+                statusMap.set(my_item.def_index, 1);
+            }
+        }
+        let statusStr = "";
+        for (let def_index of statusMap.keys()) {
+            if (def_index > 1000) {
+                if (itemInfo[def_index]) {
+                    statusStr += ("名称: " + itemInfo[def_index]["name"] + ", num: " + statusMap.get(def_index) + "\n");
+                } else {
+                    statusStr += ("def_index: " + def_index + ", num: " + statusMap.get(def_index) + "\n");
+                }
+            }
+        }
+        if (res) {
+            res.end(statusStr)
+        }
+    }
+
     flushOutterItem(func) {
         for (let key of this.#outter_items.keys()) {
             let my_item = this.#outter_items.get(key);
@@ -402,9 +499,9 @@ class CasketHelper extends EventEmitter {
         }
     }
 
-    createCasket(casket_id) {
+    createCasket(casket_id, size) {
         if (!this.hasCasket(casket_id)) {
-            var casket = new CsgoCasket(casket_id);
+            var casket = new CsgoCasket(casket_id, size);
             this.#caskets.set(casket_id, casket);
         }
     }
@@ -456,6 +553,13 @@ class CasketHelper extends EventEmitter {
             return true;
         }
         return item.tradable() == Boolean(need_tradable);
+    }
+
+    static checkDefIndex(item, def_index) {
+        if (def_index == 0) {
+            return true;
+        }
+        return item.def_index == def_index;
     }
 }
 
