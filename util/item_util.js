@@ -8,6 +8,27 @@ class OriginItemUtil {
     static isClutchCase(item) {
         return item.def_index != null && item.def_index == 4471;
     }
+    
+    /**
+     * 地平线武器箱
+     */
+    static isHorizonCase(item) {
+        return item.def_index != null && item.def_index == 4482;
+    }
+
+    /**
+     * 头号特训武器箱
+     */
+    static isDangerZoneCase(item) {
+        return item.def_index != null && item.def_index == 4548;
+    }
+
+    /**
+     * 棱菜武器箱
+     */
+    static isPrismaCase(item) {
+        return item.def_index != null && item.def_index == 4598;
+    }
 
     /**
      * csgo20周年武器箱
@@ -121,7 +142,11 @@ class OriginItemUtil {
      * 是否可交易
      */
     static isTradable(item) {
-        return item.tradable_after != null && item.tradable_after < new Date();
+        if (item.tradable_after != null && item.tradable_after < new Date()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -456,29 +481,61 @@ class CasketHelper extends EventEmitter {
         console.log("remain unmoved moveout_num:", move_num);
     }
 
-    statusCB(res = null) {
+    getStatusMap(items) {
         let statusMap = new Map();
-        for (let my_item_key of this.#inner_items.keys()) {
-            var my_item = this.#inner_items.get(my_item_key);
+        for (let my_item_key of items.keys()) {
+            let my_item = items.get(my_item_key);
+            let tradable = OriginItemUtil.isTradable(my_item);
             if (statusMap.has(my_item.def_index)) {
-                statusMap.set(my_item.def_index, statusMap.get(my_item.def_index) + 1);
+                let tradableMap = statusMap.get(my_item.def_index);
+                if (tradableMap.has(tradable)) {
+                    tradableMap.set(tradable, tradableMap.get(tradable) + 1);
+                } else {
+                    tradableMap.set(tradable, 1);
+                }
             } else {
-                statusMap.set(my_item.def_index, 1);
+                let tradableMap = new Map();
+                tradableMap.set(tradable, 1);
+                statusMap.set(my_item.def_index, tradableMap);
             }
         }
+        return statusMap;
+    }
+
+    getStatusStr(statusMap) {
         let statusStr = "";
         for (let def_index of statusMap.keys()) {
             if (def_index > 1000) {
+                let tradable_num = Number(statusMap.get(def_index).get(true));
+                let untradable_num = Number(statusMap.get(def_index).get(false));
+                statusStr += ("def_index: " + def_index);
                 if (itemInfo[def_index]) {
-                    statusStr += ("名称: " + itemInfo[def_index]["name"] + ", num: " + statusMap.get(def_index) + "\n");
-                } else {
-                    statusStr += ("def_index: " + def_index + ", num: " + statusMap.get(def_index) + "\n");
+                    statusStr += (", 名称: " + itemInfo[def_index]["name"]);
                 }
+                if (tradable_num) {
+                    statusStr += (", tradable_num: " + tradable_num);
+                }
+                if (untradable_num) {
+                    statusStr += (", untradable_num: " + untradable_num);
+                }
+                statusStr += "\n";
             }
         }
+        return statusStr;
+    }
+
+    statusCB(res = null) {
+        let statusStr = "";
+        let innerStatusMap = this.getStatusMap(this.#inner_items);
+        let outterStatusMap = this.getStatusMap(this.#outter_items);
+        statusStr += "========================Inner========================\n";
+        statusStr += this.getStatusStr(innerStatusMap);
+        statusStr += "========================Outter========================\n";
+        statusStr += this.getStatusStr(outterStatusMap);
         if (res) {
             res.end(statusStr)
         }
+        return statusStr;
     }
 
     flushOutterItem(func) {
