@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Document</title>
+</head>
+
+<body
+	style="background-image: url(../img/index_background.jpg);background-size:100% 100%;">
+	<h1 style="color: chartreuse;">NovenStorage</h1>
+	<form>
+		<input style="width: 200px;" id="account" type="text" placeholder="Steam账号" />
+		<br />
+		<input style="width: 200px;" id="passwd" type="password" placeholder="Steam密码" />
+		<br />
+		<input style="width: 200px;" id="twoFactorCode" type="text" placeholder="Steam令牌" />
+		<br />
+		<input type="checkbox" id="rememberPasswd" /><label for="memory" style="color: chartreuse;">记住密码</label>
+		<input type="checkbox" id="autoRelogin" /><label for="memory" style="color: chartreuse;">自动重连</label>
+	</form>
+	<button onclick="SteamLogin()" style="border-radius: 20%">登录Steam</button>
+
+	<script>
+		const { ipcRenderer } = require('electron');
+		const fs = require('fs');
+		function SteamLogin() {
+			let account = document.getElementById("account");
+			let passwd = document.getElementById("passwd");
+			let twoFactorCode = document.getElementById("twoFactorCode");
+			let rememberPasswd = document.getElementById("rememberPasswd");
+			let autoRelogin = document.getElementById("autoRelogin");
+			ipcRenderer.send('steamLogin', account.value, passwd.value, twoFactorCode.value, rememberPasswd.checked, autoRelogin.checked);
+		}
+		function Init() {
+			try {
+				let accountInfo = JSON.parse(fs.readFileSync('./account.json'));
+				if (accountInfo.remember) {
+					let account = document.getElementById("account");
+					account.value = accountInfo.account ? accountInfo.account : "";
+					let passwd = document.getElementById("passwd");
+					passwd.value = accountInfo.passwd ? accountInfo.passwd : "";
+				}
+				let rememberPasswd = document.getElementById("rememberPasswd");
+				rememberPasswd.checked = accountInfo.remember;
+			}
+			catch (err) { }
+		}
+
+		Init();
+	</script>
+</body>
+
+</html>

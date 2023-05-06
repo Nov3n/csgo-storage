@@ -1,0 +1,29 @@
+
+{
+    "appenders": {
+        "fileAppender": {
+            "type": "file",
+            "filename": "./log/csgo-storage.log",
+            "layout": {
+                "type": "pattern",
+                "pattern": "%d [%z] [%p] %m"
+            }
+        },
+        "stdout": {
+            "type": "stdout",
+            "layout": {
+                "type": "pattern",
+                "pattern": "%d [%z] [%p] %m"
+            }
+        }
+    },
+    "categories": {
+        "default": {
+            "appenders": [
+                "fileAppender",
+                "stdout"
+            ],
+            "level": "info"
+        }
+    }
+}
