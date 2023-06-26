@@ -76,13 +76,40 @@
         </p>
 
     </div>
+
+
+    <!-- 保持箱子数量条件 -->
+    <div id="numKeepDiv`">
+        <h1 style="background-color: darkkhaki;width: 530px;">数量保持条件</h1>
+
+        <!-- 添加条件的操作块 -->
+        <p id="addNumKeepCond">
+            <input style="width: 100px;" id="numKeepDefIndex" type="text" placeholder="物品索引" />
+            <select id="numKeepTradable" value="1" style="width: 100px;">
+                <option value="0">不可交易</option>
+                <option value="1">可交易</option>
+                <option value="2">不限</option>
+            </select>
+            <input style="width: 100px;" id="numKeepNumber" type="text" placeholder="保持数量" />
+            <button onclick="AddNumKeepCond()" type="button">添加</button>
+        </p>
+
+        <!-- 添加的条件块 -->
+        <p id=numKeepConditions>
+        </p>
+
+    </div>
     <button onclick="ExitCsgo()" type="button" style="background-color: green;width: 100px;">退出游戏</button>
     <button onclick="RefreshStatus()" type="button" style="background-color: green;width: 100px;">刷新库存</button>
 
     <script>
         const { ipcRenderer } = require('electron'); // 引入进程通信模块
+
         var autoMoveinCondMap = new Map();
         var autoMoveinCounter = 0;
+
+        var numKeepCondMap = new Map();
+        var numKeepCounter = 0;
 
         function ItemMove() {
             let defIndex = document.getElementById("storageOpDefIndex");
@@ -241,6 +268,57 @@
             autoMoveinCondMap.set(conditionP.id, { defIndex: defIndex, tradable: tradable });
         }
 
+        function AddNumKeepCond() {
+            // TODO 需要做有效性校验, 如果无效则提示输入无效
+            let defIndex = Number(document.getElementById("numKeepDefIndex").value);
+            let tradable = Number(document.getElementById("numKeepTradable").value);
+            let keepNum = Number(document.getElementById("numKeepNumber").value)
+
+            let htmlConditions = document.getElementById("numKeepConditions");
+            let htmlConditionP = document.createElement('p');
+            htmlConditionP.id = "numKeepCond-" + String(numKeepCounter);
+            numKeepCounter++;
+
+            // 创建展示的defIndex
+            let htmlConditionPDefIndex = document.createElement('input');
+            htmlConditionPDefIndex.id = htmlConditionP.id + "DefIndex";
+            htmlConditionPDefIndex.style = "width: 100px;";
+            htmlConditionPDefIndex.value = defIndex;
+            htmlConditionPDefIndex.readOnly = true;
+
+            // 创建展示的tradable
+            let htmlConditionPTradable = document.createElement('input');
+            htmlConditionPTradable.id = htmlConditionP.id + "Tradable";
+            htmlConditionPTradable.style = "width: 100px;";
+            htmlConditionPTradable.value = tradable == 0 ? "不可交易" : tradable == 1 ? "可交易" : "不限";
+            htmlConditionPTradable.readOnly = true;
+
+            // 创建展示的keepNum
+            let htmlConditionPKeepNum = document.createElement('input');
+            htmlConditionPKeepNum.id = htmlConditionP.id + "KeepNum";
+            htmlConditionPKeepNum.style = "width: 100px;";
+            htmlConditionPKeepNum.value = keepNum;
+            htmlConditionPKeepNum.readOnly = true;
+
+            // 创建删除按钮
+            let htmlDeleteButton = document.createElement('button');
+            htmlDeleteButton.id = htmlConditionP.id + "DeleteButton";
+            htmlDeleteButton.value = htmlConditionP.id;
+            htmlDeleteButton.type = 'button';
+            htmlDeleteButton.innerText = "删除"
+            htmlDeleteButton.addEventListener('click', () => {
+                htmlConditions.removeChild(htmlConditionP);
+                numKeepCondMap.delete(htmlConditionP.id);
+            });
+
+            htmlConditionP.appendChild(htmlConditionPDefIndex);
+            htmlConditionP.appendChild(htmlConditionPTradable);
+            htmlConditionP.appendChild(htmlConditionPKeepNum);
+            htmlConditionP.appendChild(htmlDeleteButton);
+            htmlConditions.appendChild(htmlConditionP);
+            numKeepCondMap.set(htmlConditionP.id, { defIndex: defIndex, tradable: tradable, keepNum: keepNum });
+        }
+
         function ExitCsgo() {
             ipcRenderer.send('exitCsgo');
         }
@@ -254,8 +332,13 @@
             ipcRenderer.send('autoMoveinCond', autoMoveinCondMap);
         }
 
+        function SendNumKeepConds() {
+            ipcRenderer.send('numKeepCond', numKeepCondMap);
+        }
+
         setInterval(() => {
             SendAutoMoveinConds();
+            SendNumKeepConds();
         }, 3000);
     </script>
 </body>
