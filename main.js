@@ -2,12 +2,12 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const SteamUser = require("steam-user");
 const SteamCommunity = require('steamcommunity');
 const fs = require("fs");
-const path = require("path")
 const log4js = require("log4js");
 const GlobalOffensive = require("globaloffensive");
 const { OriginItemUtil, CasketHelper, CsgoItem } = require('./src/js/util/item_util');
 const { PreAutoMovein } = require('./src/js/csgo_storage')
-let logConf = JSON.parse(fs.readFileSync(path.join(__dirname, "./conf/log_config.json"), 'utf8'));
+let logConf = JSON.parse(fs.readFileSync("./conf/log_config.json", 'utf8'));
+// let logConf = JSON.parse(fs.readFileSync(process.cwd() + "./conf/log_config.json", 'utf8'));
 log4js.configure(logConf);
 const logger = log4js.getLogger("default");
 
@@ -65,6 +65,7 @@ function isAutoMovein(item) {
     }
     return res;
 }
+
 
 // 创建初始窗口
 function createIndexWindow() {
@@ -223,6 +224,16 @@ ipcMain.on('exitCsgo', async (event) => {
     autoRelogin = false;
 });
 
+ipcMain.on('refreshStatus', async (event) => {
+    csgoClient.inventory.forEach(function (item) {
+        if (OriginItemUtil.isCasket(item)) {
+            csgoCasketHelper.emit('casketFound', item.id, item.casket_contained_item_count);
+        } else {
+            csgoCasketHelper.emit('itemFound', CsgoItem.fromOriginItem(item));
+        }
+    });
+});
+
 // 游戏登陆成功时关闭登录界面, 打开库存界面
 ipcMain.on('connectedToGC', async (details) => {
     closeIndexWindow();
@@ -254,14 +265,28 @@ app.on('window-all-closed', () => {
 // setInterval(() => {
 //     if (statusWin != null) {
 //         timeCount++;
-//         statusWin.webContents.send('statusOnTimer', "第" + timeCount + "次返回statusStr");
+//         let mp = new Map();
+
+//         let innerMp = new Map();
+//         innerMp.set(4472, new Map());
+//         innerMp.get(4472).set(true, 10);
+//         innerMp.get(4472).set(false, 20);
+//         innerMp.get(4472).set("name", "命悬二线");
+
+//         let outterMp = new Map();
+//         outterMp.set(4471, new Map());
+//         outterMp.get(4471).set(true, 10);
+//         // outterMp.get(4471).set(false, 20);
+//         outterMp.get(4471).set("name", "命悬一线");
+
+//         mp.set("outter", outterMp);
+//         mp.set("inner", innerMp);
+//         statusWin.webContents.send('statusOnTimer', mp);
 //         statusWin.webContents.send('moveTaskOnTimer', 200, 500);
 //     }
 // }, 500)
 
 // setInterval(() => {
-//     console.log("IsAutoMovein: " + isAutoMovein(new CsgoItem(1234, 4747, null, new Date())));
-//     console.log("IsAutoMovein: " + isAutoMovein(new CsgoItem(1234, 7777, null, new Date())));
 //     if (statusWin != null) {
 //         statusWin.webContents.send('avatarUrl', "http://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/bc/bc31f8bc25b4768aa1e5283e3ae4b1ba425d72a5_full.jpg");
 //      }

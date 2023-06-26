@@ -283,7 +283,6 @@ class CasketHelper extends EventEmitter {
         this.on("listOutterItem", this.listOutterItemCB);
         this.on("moveinTask", this.moveinTaskCB);
         this.on("moveoutTask", this.moveoutTaskCB);
-        this.on("status", this.statusCB);
 
         setInterval(() => {
             this.executeTasks();
@@ -531,6 +530,9 @@ class CasketHelper extends EventEmitter {
         let statusMap = new Map();
         for (let my_item_key of items.keys()) {
             let my_item = items.get(my_item_key);
+            if (my_item.def_index <= 1000) {
+                continue;
+            }
             let tradable = OriginItemUtil.isTradable(my_item);
             if (statusMap.has(my_item.def_index)) {
                 let tradableMap = statusMap.get(my_item.def_index);
@@ -543,46 +545,22 @@ class CasketHelper extends EventEmitter {
                 let tradableMap = new Map();
                 tradableMap.set(tradable, 1);
                 statusMap.set(my_item.def_index, tradableMap);
+                if (itemInfo[my_item.def_index]) {
+                    tradableMap.set("name", itemInfo[my_item.def_index]["name"]);
+                }
             }
         }
         return statusMap;
     }
 
-    getStatusStr(statusMap) {
-        let statusStr = "";
-        for (let def_index of statusMap.keys()) {
-            if (def_index > 1000) {
-                let tradable_num = Number(statusMap.get(def_index).get(true));
-                let untradable_num = Number(statusMap.get(def_index).get(false));
-                statusStr += ("物品索引: " + def_index);
-                if (itemInfo[def_index]) {
-                    statusStr += (", 名称: " + itemInfo[def_index]["name"]);
-                }
-                if (tradable_num) {
-                    statusStr += (", 可交易数量: " + tradable_num);
-                }
-                if (untradable_num) {
-                    statusStr += (", 不可交易数量: " + untradable_num);
-                }
-                statusStr += "\n";
-            }
-        }
-        return statusStr;
-    }
-
-    statusCB(res = null) {
-        let statusStr = "";
+    statusCB() {
         let innerStatusMap = this.getStatusMap(this.#inner_items);
         let outterStatusMap = this.getStatusMap(this.#outter_items);
-        statusStr += "========================组件内物品========================\n";
-        statusStr += this.getStatusStr(innerStatusMap);
-        statusStr += "========================组件外物品========================\n";
-        statusStr += this.getStatusStr(outterStatusMap);
-        if (res) {
-            res.end(statusStr)
-        }
-        return statusStr;
-        // TODO(CCH) 应该return一个json格式的对象
+        let statusMap = new Map();
+        statusMap.set("inner", innerStatusMap);
+        statusMap.set("outter", outterStatusMap);
+
+        return statusMap;
     }
 
     flushOutterItem(func) {
