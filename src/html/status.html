@@ -139,23 +139,28 @@
             let heading1 = document.createElement('th');
             heading1.innerHTML = "DefIndex";
             heading1.align = "center";
-            heading1.width = "90px";
+            heading1.width = "80px";
             let heading2 = document.createElement('th');
             heading2.innerHTML = "名称";
             heading2.align = "center";
-            heading2.width = "230px";
+            heading2.width = "200px";
             let heading3 = document.createElement('th');
             heading3.innerHTML = "可交易数";
             heading3.align = "center";
-            heading1.width = "90px";
+            heading1.width = "80px";
             let heading4 = document.createElement('th');
             heading4.innerHTML = "不可交易数";
             heading4.align = "center";
-            heading4.width = "90px";
+            heading4.width = "80px";
+            let heading5 = document.createElement('th');
+            heading5.innerHTML = "总数";
+            heading5.align = "center";
+            heading5.width = "80px";
             headerRow.appendChild(heading1);
             headerRow.appendChild(heading2);
             headerRow.appendChild(heading3);
             headerRow.appendChild(heading4);
+            headerRow.appendChild(heading5);
             thead.appendChild(headerRow);
             // console.log(statusMap);
 
@@ -189,11 +194,15 @@
                     data4.innerHTML = "0";
                 }
                 data4.align = "center";
+                let data5 = document.createElement('td');
+                data5.align = "center";
+                data5.innerHTML = String(Number(data3.innerHTML) + Number(data4.innerHTML));
 
                 dataRow.appendChild(data1);
                 dataRow.appendChild(data2);
                 dataRow.appendChild(data3);
                 dataRow.appendChild(data4);
+                dataRow.appendChild(data5);
                 tbody.appendChild(dataRow);
             }
             return table;

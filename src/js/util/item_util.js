@@ -253,6 +253,7 @@ class CasketHelper extends EventEmitter {
     #moveinTasks; // 移入库存任务表
     #moveoutTasks; // 移出库存任务表
     #executingTasks; // 执行任务列表, 统一执行移入和移出任务
+    #numKeepCondMap;
     // #executingTasksSize; // 执行中的任务个数
     // #executingTasksSizeLimit // 执行中的任务个数最大限制
     #csgo; // 获取库存内物品时需要csgo接口
@@ -267,6 +268,7 @@ class CasketHelper extends EventEmitter {
         this.#moveinTasks = new Map();
         this.#moveoutTasks = new Map();
         this.#executingTasks = new Map();
+        this.#numKeepCondMap = new Map();
         // this.#executingTasksSize = 0;
         // this.#executingTasksSizeLimit = 15;
         this.#csgo = csgo;
@@ -564,6 +566,23 @@ class CasketHelper extends EventEmitter {
     }
 
     flushOutterItem(func) {
+        let outterStatusMap = this.getStatusMap(this.#outter_items);
+        for (let key of this.#numKeepCondMap.keys()) {
+            let cond = this.#numKeepCondMap.get(key);
+            let tradableNum = 0;
+            let untradableNum = 0;
+            if (outterStatusMap.has(cond.defIndex)) {
+                tradableNum = Number(outterStatusMap.get(cond.defIndex).get(true));
+                untradableNum = Number(outterStatusMap.get(cond.defIndex).get(false));
+            }
+            let validNum = cond.tradable == 0 ? untradableNum : cond.tradable == 1 ? tradableNum : tradableNum + untradableNum;
+            if (validNum > cond.keepNum) {
+                this.moveinTaskCB(cond.defIndex, cond.tradable, validNum - cond.keepNum);
+            }
+            else if (validNum < cond.keepNum) {
+                this.moveoutTaskCB(cond.defIndex, cond.tradable, cond.keepNum - validNum);
+            }
+        }
         for (let key of this.#outter_items.keys()) {
             let my_item = this.#outter_items.get(key);
             if (func(my_item)) {
@@ -638,6 +657,18 @@ class CasketHelper extends EventEmitter {
                 this.flushOutterItem(func);
             }, interval)
         }, delay)
+    }
+
+    startFlushInnerItem(func, interval = 3000, delay = 5000) {
+        setTimeout(() => {
+            setInterval(() => {
+                this.flushInnerItem(func);
+            }, interval)
+        }, delay)
+    }
+
+    setNumKeepCond(numKeepCondMap) {
+        this.#numKeepCondMap = numKeepCondMap;
     }
 
     // @param item csgo原始物品类型

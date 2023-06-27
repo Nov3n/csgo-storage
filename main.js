@@ -217,7 +217,14 @@ ipcMain.on('moveinTask', async (event, defIndex, tradable, moveNum) => {
 // 返回的自动移入组件条件
 ipcMain.on('autoMoveinCond', async (event, mp) => {
     autoMoveinCondMap = mp;
-})
+});
+
+// 库存页面返回的物品数量保持条件
+ipcMain.on('numKeepCond', async (event, mp) => {
+    if (csgoCasketHelper) {
+        csgoCasketHelper.setNumKeepCond(mp);
+    }
+});
 
 ipcMain.on('exitCsgo', async (event) => {
     ipcMain.emit('disconnectedFromGC');
