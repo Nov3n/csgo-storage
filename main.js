@@ -19,7 +19,7 @@ let csgoCasketHelper = null;
 let indexWin;  // 初始窗口
 let statusWin; // 登录后窗口
 
-
+// TODO 改成从配置文件获取窗口大小
 let indexWindowConfig = {
     width: 320,
     height: 256,
@@ -31,8 +31,8 @@ let indexWindowConfig = {
     resizable: false
 };
 let statusWindowConfig = {
-    width: 800,
-    height: 900,
+    width: 560,
+    height: 650,
     webPreferences: {
         contextIsolation: false,
         nodeIntegration: true, // 设置开启nodejs环境
