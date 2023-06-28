@@ -31,7 +31,7 @@ let indexWindowConfig = {
     resizable: false
 };
 let statusWindowConfig = {
-    width: 560,
+    width: 545,
     height: 650,
     webPreferences: {
         contextIsolation: false,
@@ -262,63 +262,68 @@ app.on('window-all-closed', () => {
 });
 
 
+// TODO 从配置获取是否开启debug模式
+let debugTest = false;
 
-// ----------测试----------
-// setTimeout(() => {
-//     ipcMain.emit('connectedToGC');
-// }, 2000)
+if (debugTest) {
+    // ----------测试----------
+    setTimeout(() => {
+        ipcMain.emit('connectedToGC');
+    }, 2000)
 
-// let timeCount = 0;
-// setInterval(() => {
-//     if (statusWin != null) {
-//         timeCount++;
-//         let mp = new Map();
+    let timeCount = 0;
+    setInterval(() => {
+        if (statusWin != null) {
+            timeCount++;
+            let mp = new Map();
 
-//         let innerMp = new Map();
-//         innerMp.set(4472, new Map());
-//         innerMp.get(4472).set(true, 10);
-//         innerMp.get(4472).set(false, 20);
-//         innerMp.get(4472).set("name", "命悬二线");
+            let innerMp = new Map();
+            innerMp.set(4472, new Map());
+            innerMp.get(4472).set(true, 10);
+            innerMp.get(4472).set(false, 20);
+            innerMp.get(4472).set("name", "命悬二线");
 
-//         let outterMp = new Map();
-//         outterMp.set(4471, new Map());
-//         outterMp.get(4471).set(true, 10);
-//         // outterMp.get(4471).set(false, 20);
-//         outterMp.get(4471).set("name", "命悬一线");
+            let outterMp = new Map();
+            outterMp.set(4471, new Map());
+            outterMp.get(4471).set(true, 10);
+            // outterMp.get(4471).set(false, 20);
+            outterMp.get(4471).set("name", "命悬一线");
 
-//         mp.set("outter", outterMp);
-//         mp.set("inner", innerMp);
-//         statusWin.webContents.send('statusOnTimer', mp);
-//         statusWin.webContents.send('moveTaskOnTimer', 200, 500);
-//     }
-// }, 500)
-
-// setInterval(() => {
-//     if (statusWin != null) {
-//         statusWin.webContents.send('avatarUrl', "http://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/bc/bc31f8bc25b4768aa1e5283e3ae4b1ba425d72a5_full.jpg");
-//      }
-// }, 2000)
-
-// ----------返回库存内容----------
-setInterval(() => {
-    if (statusWin != null) {
-        statusWin.webContents.send('moveTaskOnTimer', csgoCasketHelper.moveinTaskSize(), csgoCasketHelper.moveoutTaskSize(), csgoCasketHelper.executingTaskSize());
-    }
-}, 500)
-
-setInterval(() => {
-    if (statusWin != null) {
-        statusWin.webContents.send('statusOnTimer', csgoCasketHelper.statusCB());
-        if (steamClient) {
-            community.getSteamUser(steamClient.steamID, (err, user) => {
-                if (err) {
-                    console.log("getSteamUser Avatar ERROR");
-                }
-                else {
-                    statusWin.webContents.send('avatarUrl', user.getAvatarURL());
-                }
-            });
+            mp.set("outter", outterMp);
+            mp.set("inner", innerMp);
+            statusWin.webContents.send('statusOnTimer', mp);
+            statusWin.webContents.send('moveTaskOnTimer', 200, 500);
         }
-        statusWin.webContents.send('accountInfoOnTimer', steamAccount);
-    }
-}, 2000)
+    }, 500)
+
+    setInterval(() => {
+        if (statusWin != null) {
+            statusWin.webContents.send('avatarUrl', "http://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/bc/bc31f8bc25b4768aa1e5283e3ae4b1ba425d72a5_full.jpg");
+        }
+    }, 2000)
+}
+else {
+    // ----------返回库存内容----------
+    setInterval(() => {
+        if (statusWin != null) {
+            statusWin.webContents.send('moveTaskOnTimer', csgoCasketHelper.moveinTaskSize(), csgoCasketHelper.moveoutTaskSize(), csgoCasketHelper.executingTaskSize());
+        }
+    }, 500)
+
+    setInterval(() => {
+        if (statusWin != null) {
+            statusWin.webContents.send('statusOnTimer', csgoCasketHelper.statusCB());
+            if (steamClient) {
+                community.getSteamUser(steamClient.steamID, (err, user) => {
+                    if (err) {
+                        console.log("getSteamUser Avatar ERROR");
+                    }
+                    else {
+                        statusWin.webContents.send('avatarUrl', user.getAvatarURL());
+                    }
+                });
+            }
+            statusWin.webContents.send('accountInfoOnTimer', steamAccount);
+        }
+    }, 2000)
+}
