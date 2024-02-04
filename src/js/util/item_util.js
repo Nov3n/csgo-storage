@@ -298,6 +298,16 @@ class CasketHelper extends EventEmitter {
         console.log("moveinTasks.size= ", this.#moveinTasks.size);
         console.log("moveoutTasks.size= ", this.#moveoutTasks.size);
     }
+
+    clear() {
+        this.#caskets.clear();
+        this.#outter_items.clear();
+        this.#inner_items.clear();
+        this.#moveinTasks.clear();
+        this.#moveoutTasks.clear();
+        this.#executingTasks.clear();
+    }
+
     executeTasks() {
         // 修改后的架构
         if (this.#executingTasks.size < 20) {

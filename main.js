@@ -232,6 +232,7 @@ ipcMain.on('exitCsgo', async (event) => {
 });
 
 ipcMain.on('refreshStatus', async (event) => {
+    csgoCasketHelper.clear();
     csgoClient.inventory.forEach(function (item) {
         if (OriginItemUtil.isCasket(item)) {
             csgoCasketHelper.emit('casketFound', item.id, item.casket_contained_item_count);

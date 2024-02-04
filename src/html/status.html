@@ -333,7 +333,17 @@
             ipcRenderer.send('exitCsgo');
         }
 
+        // 清楚ui元素和map
+        function ClearNumKeepCond() {
+            let htmlConditions = document.getElementById("numKeepConditions");
+            for (let id of numKeepCondMap.keys()) {
+                let ele = document.getElementById(id);
+                htmlConditions.removeChild(ele);
+            }
+        }
+
         function RefreshStatus() {
+            ClearNumKeepCond();
             ipcRenderer.send('refreshStatus');
         }
 
