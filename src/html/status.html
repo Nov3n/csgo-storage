@@ -333,6 +333,15 @@
             ipcRenderer.send('exitCsgo');
         }
 
+        function ClearAutoMoveinCond() {
+            let autoMoveinConditions = document.getElementById("autoMoveinConditions");
+            for (let id of autoMoveinCondMap.keys()) {
+                let ele = document.getElementById(id);
+                autoMoveinConditions.removeChild(ele);
+            }
+            autoMoveinCondMap.clear();
+        }
+
         // 清楚ui元素和map
         function ClearNumKeepCond() {
             let htmlConditions = document.getElementById("numKeepConditions");
@@ -340,6 +349,7 @@
                 let ele = document.getElementById(id);
                 htmlConditions.removeChild(ele);
             }
+            numKeepCondMap.clear();
         }
 
         function RefreshStatus() {
