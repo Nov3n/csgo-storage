@@ -1,0 +1,15 @@
+.btn {
+    font-size: 15px;
+    text-align: center;
+    cursor: pointer;
+    outline: none;
+    color: rgb(137, 137, 128);
+    background-color: aquamarine;
+    border: none;
+    border-radius: 5px;
+    height: 25px;
+    width: 100px;
+}
+.btn:active {
+    transform: translateY(4px);
+}

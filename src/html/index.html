@@ -6,6 +6,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<title>Document</title>
+	<link href="../text/style.css" type="text/css" rel="stylesheet" />
 </head>
 
 <body
@@ -21,7 +22,7 @@
 		<input type="checkbox" id="rememberPasswd" /><label for="memory" style="color: chartreuse;">记住密码</label>
 		<input type="checkbox" id="autoRelogin" /><label for="memory" style="color: chartreuse;">自动重连</label>
 	</form>
-	<button onclick="SteamLogin()" style="border-radius: 20%">登录Steam</button>
+	<button onclick="SteamLogin()" class="btn">登录Steam</button>
 
 	<script>
 		const { ipcRenderer } = require('electron');
