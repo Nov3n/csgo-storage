@@ -7,7 +7,7 @@ const GlobalOffensive = require("globaloffensive");
 const { OriginItemUtil, CasketHelper, CsgoItem } = require('./src/js/util/item_util');
 const { PreAutoMovein } = require('./src/js/csgo_storage')
 let logConf = JSON.parse(fs.readFileSync("./conf/log_config.json", 'utf8'));
-// let logConf = JSON.parse(fs.readFileSync(process.cwd() + "./conf/log_config.json", 'utf8'));
+let csgoConf = JSON.parse(fs.readFileSync("./conf/csgo_conf.json", 'utf8'));
 log4js.configure(logConf);
 const logger = log4js.getLogger("default");
 
@@ -18,6 +18,7 @@ let csgoClient = null;
 let csgoCasketHelper = null;
 let indexWin;  // 初始窗口
 let statusWin; // 登录后窗口
+let isReconnect = false;
 
 // TODO 改成从配置文件获取窗口大小
 let indexWindowConfig = {
@@ -41,6 +42,7 @@ let statusWindowConfig = {
     resizable: false
 };
 let autoMoveinCondMap = null;
+let numKeepCondMap = null;
 let rmbPasswd = false;
 let autoRelogin = false;
 let steamAccount = null;
@@ -118,14 +120,14 @@ function createSteamClient() {
         steamClient.setPersona(SteamUser.EPersonaState.Invisible);
         steamClient.gamesPlayed([730], true);
         if (rmbPasswd) {
-            fs.writeFile('account.json', JSON.stringify(steamAccount), (err) => {
+            fs.writeFile('./conf/account.json', JSON.stringify(steamAccount), (err) => {
                 if (err) {
                     console.log("Remember Passwd Failed");
                 }
             });
         }
         else {
-            fs.writeFile('account.json', JSON.stringify(steamAccount), (err) => { });
+            fs.writeFile('./conf/account.json', JSON.stringify(steamAccount), (err) => { });
         }
     });
 }
@@ -133,18 +135,11 @@ function createSteamClient() {
 function createCsgoClient() {
     csgoClient = new GlobalOffensive(steamClient);
 
-
-    // let csgoConf = JSON.parse(fs.readFileSync(process.cwd() + "./conf/csgo_conf.json", 'utf8'));
-    // casketHelperLoopInterval = csgoConf["loopInterval"];
-    // casketHelperExecInterval = csgoConf["execInterval"];
-    // flushOutterItem = csgoConf["flushOutterItem"];
-    // flushOutterItemDelay = csgoConf["flushOutterItemDelay"];
-    // flushOutterItemInterval = csgoConf["flushOutterItemInterval"];
-    casketHelperLoopInterval = 2000;
-    casketHelperExecInterval = 100;
+    casketHelperLoopInterval = csgoConf["loopInterval"];
+    casketHelperExecInterval = csgoConf["execInterval"];
     csgoClientMaxListeners = 200;
-    flushOutterItemInterval = 3000;
-    flushOutterItemDelay = 5000;
+    flushOutterItemInterval = csgoConf["flushItemInt"];
+    flushOutterItemDelay = csgoConf["flushDelay"];
     flushOutterItem = true;
 
     csgoCasketHelper = new CasketHelper(csgoClient, casketHelperLoopInterval, casketHelperExecInterval, logger);
@@ -216,11 +211,28 @@ ipcMain.on('moveinTask', async (event, defIndex, tradable, moveNum) => {
 
 // 返回的自动移入组件条件
 ipcMain.on('autoMoveinCond', async (event, mp) => {
+    let saveMp = csgoConf;
+    let mpTmp = {};
+    for (let key of mp.keys()) {
+        mpTmp[key] = mp.get(key);
+    }
+    saveMp["autoMoveinCond"] = JSON.stringify(mpTmp);
+    fs.writeFile('./conf/csgo_conf.json', JSON.stringify(saveMp), function (err) { if (err) { console.log("Write File err") } });
     autoMoveinCondMap = mp;
 });
 
 // 库存页面返回的物品数量保持条件
 ipcMain.on('numKeepCond', async (event, mp) => {
+    let saveMp = csgoConf;
+    // Map类型无法直接用JSON.stringify, 需要转成object
+    let mpTmp = {};
+    for (let key of mp.keys()) {
+        mpTmp[key] = mp.get(key);
+    }
+    console.log(saveMp);
+    saveMp["numKeepCond"] = JSON.stringify(mpTmp);
+    fs.writeFile('./conf/csgo_conf.json', JSON.stringify(saveMp), function (err) { if (err) { console.log("Write File err") } });
+    numKeepCondMap = mp;
     if (csgoCasketHelper) {
         csgoCasketHelper.setNumKeepCond(mp);
     }
@@ -246,12 +258,30 @@ ipcMain.on('refreshStatus', async (event) => {
 ipcMain.on('connectedToGC', async (details) => {
     closeIndexWindow();
     createStatusWindow();
+    if (isReconnect) {
+        console.log("Reconnect to GC")
+        setTimeout(() => {
+            console.log("Send AutoMoveinCond and numKeepCond");
+            console.log(autoMoveinCondMap);
+            console.log(numKeepCondMap);
+            statusWin.webContents.send('autoMoveinCond', autoMoveinCondMap);
+            statusWin.webContents.send('numKeepCond', numKeepCondMap);
+        }, 300);
+    }
 });
+
+ipcMain.on('htmlLog', async (event, data) => {
+    console.log("Recv htmlLog");
+    console.log(data);
+    // TODO 测试完成后使用日志输出
+    // logger.info(data);
+})
 
 // 游戏登录失败时, 关闭库存界面, 重新打开登录界面
 ipcMain.on('disconnectedFromGC', () => {
     closeStatusWindow();
     createIndexWindow();
+    isReconnect = true;
     if (autoRelogin && steamClient) {
         steamClient.gamesPlayed([730], true);
     }
@@ -263,14 +293,21 @@ app.on('window-all-closed', () => {
 });
 
 
-// TODO 从配置获取是否开启debug模式
-let debugTest = false;
+let debugTest = csgoConf["debugTest"];
 
 if (debugTest) {
     // ----------测试----------
     setTimeout(() => {
         ipcMain.emit('connectedToGC');
-    }, 2000)
+    }, 2000);
+
+    setTimeout(() => {
+        ipcMain.emit('disconnectedFromGC');
+    }, 15000);
+
+    setTimeout(() => {
+        ipcMain.emit('connectedToGC');
+    }, 17000);
 
     let timeCount = 0;
     setInterval(() => {
@@ -295,7 +332,7 @@ if (debugTest) {
             statusWin.webContents.send('statusOnTimer', mp);
             statusWin.webContents.send('moveTaskOnTimer', 200, 500);
         }
-    }, 500)
+    }, 2000)
 
     setInterval(() => {
         if (statusWin != null) {

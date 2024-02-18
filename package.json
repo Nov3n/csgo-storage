@@ -21,7 +21,7 @@
   "dependencies": {
     "electron-squirrel-startup": "^1.0.0",
     "fs": "^0.0.1-security",
-    "globaloffensive": "^2.3.0",
+    "globaloffensive": "^3.1.0",
     "log4js": "^6.9.1",
     "steam-user": "^4.28.0",
     "steamcommunity": "^3.44.3"

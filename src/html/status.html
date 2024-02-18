@@ -234,17 +234,31 @@
             let avatar = document.getElementById("avatar");
             avatar.src = url;
         });
-
-
-        function AddAutoMoveinCond() {
-            let defIndex = Number(document.getElementById("autoMoveinDefIndex").value);
-            let tradable = Number(document.getElementById("autoMoveinTradable").value);
-
+        ipcRenderer.on('autoMoveinCond', async (event, autoMoveinMp) => {
             let autoMoveinConditions = document.getElementById("autoMoveinConditions");
+            for (let key of autoMoveinMp.keys()) {
+                ipcRenderer.send('htmlLog', key);
+                let val = autoMoveinMp.get(key);
+                let conditionP = CreateAutoMoveinP(key, val.defIndex, val.tradable);
+                autoMoveinConditions.appendChild(conditionP);
+            }
+            autoMoveinCondMap = mp;
+        });
+        ipcRenderer.on('numKeepCond', async (event, numKeepMp) => {
+            let htmlConditions = document.getElementById("numKeepConditions");
+            for (let key of numKeepMp.keys()) {
+                ipcRenderer.send('htmlLog', key);
+                let val = numKeepMp.get(key);
+                let conditionP = CreateNumKeepCond(key, val.defIndex, val.tradable, val.keepNum);
+                htmlConditions.appendChild(conditionP);
+            }
+            autoMoveinCondMap = mp;
+        });
+
+        function CreateAutoMoveinP(id, defIndex, tradable) {
             // 创建条件展示块
             let conditionP = document.createElement('p');
-            conditionP.id = "autoMoveinCond-" + String(autoMoveinCounter);
-            autoMoveinCounter++;
+            conditionP.id = id;
 
             // 创建展示的defIndex
             let conditionPdefindex = document.createElement('input');
@@ -267,27 +281,25 @@
             deleteButton.type = 'button';
             deleteButton.innerText = "删除"
             deleteButton.addEventListener('click', () => {
+                let autoMoveinConditions = document.getElementById("autoMoveinConditions");
                 autoMoveinConditions.removeChild(conditionP);
                 autoMoveinCondMap.delete(conditionP.id);
+                SendAutoMoveinConds();
             });
 
             conditionP.appendChild(conditionPdefindex);
             conditionP.appendChild(conditionPtradable);
             conditionP.appendChild(deleteButton);
-            autoMoveinConditions.appendChild(conditionP);
+
             autoMoveinCondMap.set(conditionP.id, { defIndex: defIndex, tradable: tradable });
+
+            return conditionP;
         }
 
-        function AddNumKeepCond() {
-            // TODO 需要做有效性校验, 如果无效则提示输入无效
-            let defIndex = Number(document.getElementById("numKeepDefIndex").value);
-            let tradable = Number(document.getElementById("numKeepTradable").value);
-            let keepNum = Number(document.getElementById("numKeepNumber").value)
-
-            let htmlConditions = document.getElementById("numKeepConditions");
+        function CreateNumKeepCond(id, defIndex, tradable, keepNum) {
+            // 创建条件展示块
             let htmlConditionP = document.createElement('p');
-            htmlConditionP.id = "numKeepCond-" + String(numKeepCounter);
-            numKeepCounter++;
+            htmlConditionP.id = id;
 
             // 创建展示的defIndex
             let htmlConditionPDefIndex = document.createElement('input');
@@ -317,16 +329,47 @@
             htmlDeleteButton.type = 'button';
             htmlDeleteButton.innerText = "删除"
             htmlDeleteButton.addEventListener('click', () => {
+                let htmlConditions = document.getElementById("numKeepConditions");
                 htmlConditions.removeChild(htmlConditionP);
                 numKeepCondMap.delete(htmlConditionP.id);
+                SendNumKeepConds();
             });
 
             htmlConditionP.appendChild(htmlConditionPDefIndex);
             htmlConditionP.appendChild(htmlConditionPTradable);
             htmlConditionP.appendChild(htmlConditionPKeepNum);
             htmlConditionP.appendChild(htmlDeleteButton);
-            htmlConditions.appendChild(htmlConditionP);
+            
             numKeepCondMap.set(htmlConditionP.id, { defIndex: defIndex, tradable: tradable, keepNum: keepNum });
+
+            return htmlConditionP
+        }
+
+
+        function AddAutoMoveinCond() {
+            let defIndex = Number(document.getElementById("autoMoveinDefIndex").value);
+            let tradable = Number(document.getElementById("autoMoveinTradable").value);
+
+            let autoMoveinConditions = document.getElementById("autoMoveinConditions");
+            let conditionP = CreateAutoMoveinP("autoMoveinCond-" + String(autoMoveinCounter), defIndex, tradable);
+            autoMoveinCounter++;
+
+            autoMoveinConditions.appendChild(conditionP);
+            SendAutoMoveinConds();
+        }
+
+        function AddNumKeepCond() {
+            // TODO 需要做有效性校验, 如果无效则提示输入无效
+            let defIndex = Number(document.getElementById("numKeepDefIndex").value);
+            let tradable = Number(document.getElementById("numKeepTradable").value);
+            let keepNum = Number(document.getElementById("numKeepNumber").value)
+
+            let htmlConditions = document.getElementById("numKeepConditions");
+            let htmlConditionP = CreateNumKeepCond("numKeepCond-" + String(numKeepCounter), defIndex, tradable, keepNum);
+            numKeepCounter++;
+
+            htmlConditions.appendChild(htmlConditionP);
+            SendNumKeepConds();
         }
 
         function ExitCsgo() {
@@ -342,7 +385,7 @@
             autoMoveinCondMap.clear();
         }
 
-        // 清楚ui元素和map
+        // 清除ui元素和map
         function ClearNumKeepCond() {
             let htmlConditions = document.getElementById("numKeepConditions");
             for (let id of numKeepCondMap.keys()) {
