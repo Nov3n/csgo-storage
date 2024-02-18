@@ -331,7 +331,8 @@ class CasketHelper extends EventEmitter {
         let i = 1;
         for (var key of this.#executingTasks.keys()) {
             let task = this.#executingTasks.get(key);
-            if (task.exec_times >= 10) {
+            // 三次执行失败直接取消该任务
+            if (task.exec_times >= 3) {
                 this.#executingTasks.delete(key);
                 if (task.move_type == 0) {  // 
                     this.#outter_items.set(task.item_id, this.#inner_items.get(task.item_id));
