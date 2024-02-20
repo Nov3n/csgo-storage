@@ -1,8 +1,5 @@
 const { EventEmitter } = require("events").EventEmitter;
 const { fs } = require("fs");
-// let itemInfo = JSON.parse(fs.readFileSync("../../../conf/item_info.json", 'utf8'))
-// TODO(CCH) 需要可以启动时动态读取的
-let itemInfo = require("../../../conf/item_info.json");
 
 class OriginItemUtil {
     /**
@@ -253,8 +250,8 @@ class CasketHelper extends EventEmitter {
     #moveinTasks; // 移入库存任务表
     #moveoutTasks; // 移出库存任务表
     #executingTasks; // 执行任务列表, 统一执行移入和移出任务
-    #numKeepCondMap;
-    // #executingTasksSize; // 执行中的任务个数
+    #numKeepCondMap; // 数量保持条件
+    #extraItemInfo
     // #executingTasksSizeLimit // 执行中的任务个数最大限制
     #csgo; // 获取库存内物品时需要csgo接口
     #loopInterval;
@@ -269,6 +266,7 @@ class CasketHelper extends EventEmitter {
         this.#moveoutTasks = new Map();
         this.#executingTasks = new Map();
         this.#numKeepCondMap = new Map();
+        this.#extraItemInfo = new Map();
         // this.#executingTasksSize = 0;
         // this.#executingTasksSizeLimit = 15;
         this.#csgo = csgo;
@@ -298,14 +296,18 @@ class CasketHelper extends EventEmitter {
         console.log("moveinTasks.size= ", this.#moveinTasks.size);
         console.log("moveoutTasks.size= ", this.#moveoutTasks.size);
     }
+    
+    setExtraItemInfo(itemInfo) {
+        this.#extraItemInfo = itemInfo;
+    }
 
     clear() {
-        this.#caskets.clear();
-        this.#outter_items.clear();
-        this.#inner_items.clear();
         this.#moveinTasks.clear();
         this.#moveoutTasks.clear();
         this.#executingTasks.clear();
+        this.#caskets.clear();
+        this.#outter_items.clear();
+        this.#inner_items.clear();
     }
 
     executeTasks() {
@@ -558,8 +560,8 @@ class CasketHelper extends EventEmitter {
                 let tradableMap = new Map();
                 tradableMap.set(tradable, 1);
                 statusMap.set(my_item.def_index, tradableMap);
-                if (itemInfo[my_item.def_index]) {
-                    tradableMap.set("name", itemInfo[my_item.def_index]["name"]);
+                if (this.#extraItemInfo[my_item.def_index]) {
+                    tradableMap.set("name", this.#extraItemInfo[my_item.def_index]["name"]);
                 }
             }
         }
@@ -712,7 +714,6 @@ module.exports = {
     CsgoCasketMaxSize,
     CsgoCasket,
     CsgoItem,
-    CasketHelper,
-    itemInfo
+    CasketHelper
 };
 

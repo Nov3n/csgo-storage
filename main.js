@@ -8,6 +8,7 @@ const { OriginItemUtil, CasketHelper, CsgoItem } = require('./src/js/util/item_u
 const { PreAutoMovein } = require('./src/js/csgo_storage')
 let logConf = JSON.parse(fs.readFileSync("./conf/log_config.json", 'utf8'));
 let csgoConf = JSON.parse(fs.readFileSync("./conf/csgo_conf.json", 'utf8'));
+let itemInfo = JSON.parse(fs.readFileSync("./conf/item_info.json", 'utf-8'));
 log4js.configure(logConf);
 const logger = log4js.getLogger("default");
 
@@ -115,7 +116,7 @@ function closeIndexWindow() {
 function createSteamClient() {
     steamClient = new SteamUser();
     // 设置steam登录成功回调
-    steamClient.on('loggedOn', async (details) => {
+    steamClient.on('loggedOn', async (event, details) => {
         logger.info("Steam LoggedOn, SteamID: " + steamClient.steamID.getSteamID64());
         steamClient.setPersona(SteamUser.EPersonaState.Invisible);
         steamClient.gamesPlayed([730], true);
@@ -130,6 +131,12 @@ function createSteamClient() {
             fs.writeFile('./conf/account.json', JSON.stringify(steamAccount), (err) => { });
         }
     });
+    steamClient.on('steamGuard', async (domain, callback, lastCodeWrong) => {
+        indexWin.webContents.send('steamGuard');
+    })
+    steamClient.on('error', async (e) => {
+        indexWin.webContents.send('logonError');
+    })
 }
 
 function createCsgoClient() {
@@ -143,6 +150,7 @@ function createCsgoClient() {
     flushOutterItem = true;
 
     csgoCasketHelper = new CasketHelper(csgoClient, casketHelperLoopInterval, casketHelperExecInterval, logger);
+    csgoCasketHelper.setExtraItemInfo(itemInfo);
     csgoClient.setMaxListeners(csgoClientMaxListeners);
 
     // 设置csgo登陆成功回调
@@ -229,7 +237,6 @@ ipcMain.on('numKeepCond', async (event, mp) => {
     for (let key of mp.keys()) {
         mpTmp[key] = mp.get(key);
     }
-    console.log(saveMp);
     saveMp["numKeepCond"] = JSON.stringify(mpTmp);
     fs.writeFile('./conf/csgo_conf.json', JSON.stringify(saveMp), function (err) { if (err) { console.log("Write File err") } });
     numKeepCondMap = mp;

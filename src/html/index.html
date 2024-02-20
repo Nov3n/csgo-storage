@@ -9,8 +9,7 @@
 	<link href="../text/style.css" type="text/css" rel="stylesheet" />
 </head>
 
-<body
-	style="background-image: url(../img/index_background.jpg);background-size:100% 100%;">
+<body style="background-image: url(../img/index_background.jpg);background-size:100% 100%;">
 	<h1 style="color: chartreuse;">NovenStorage</h1>
 	<form>
 		<input style="width: 200px;" id="account" type="text" placeholder="Steam账号" />
@@ -35,6 +34,12 @@
 			let autoRelogin = document.getElementById("autoRelogin");
 			ipcRenderer.send('steamLogin', account.value, passwd.value, twoFactorCode.value, rememberPasswd.checked, autoRelogin.checked);
 		}
+		ipcRenderer.on('steamGuard', async (event) => {
+			window.alert("令牌错误或者未输入令牌");
+		});
+		ipcRenderer.on('logonError', async (event) => {
+			window.alert("登录错误，请检查密码或者稍后再试")
+		});
 		function Init() {
 			try {
 				let accountInfo = JSON.parse(fs.readFileSync('./account.json'));
