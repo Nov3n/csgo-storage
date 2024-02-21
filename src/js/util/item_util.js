@@ -570,6 +570,10 @@ class CasketHelper extends EventEmitter {
 
     statusCB() {
         let innerStatusMap = this.getStatusMap(this.#inner_items);
+        let remainSizeMap = new Map();
+        remainSizeMap.set(false, this.#caskets.size * 1000 - this.#inner_items.size);
+        remainSizeMap.set("name", "剩余存入空间数");
+        innerStatusMap.set(0, remainSizeMap);
         let outterStatusMap = this.getStatusMap(this.#outter_items);
         let statusMap = new Map();
         statusMap.set("inner", innerStatusMap);
