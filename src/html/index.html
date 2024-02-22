@@ -42,7 +42,7 @@
 		});
 		function Init() {
 			try {
-				let accountInfo = JSON.parse(fs.readFileSync('./account.json'));
+				let accountInfo = JSON.parse(fs.readFileSync('./conf/account.json'));
 				if (accountInfo.remember) {
 					let account = document.getElementById("account");
 					account.value = accountInfo.account ? accountInfo.account : "";
