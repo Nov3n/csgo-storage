@@ -313,14 +313,7 @@ class CasketHelper extends EventEmitter {
     executeTasks() {
         // 修改后的架构
         if (this.#executingTasks.size < 20) {
-            for (var key of this.#moveoutTasks.keys()) {
-                if (this.#executingTasks.size >= 20) {
-                    break;
-                }
-                let task = this.#moveoutTasks.get(key);
-                this.#executingTasks.set(task.item_id, task);
-                this.#moveoutTasks.delete(key);
-            }
+            // 原则上来说先执行移入操作，后执行移出操作，因为外界库存空间一般来说较小
             for (var key of this.#moveinTasks.keys()) {
                 if (this.#executingTasks.size >= 20) {
                     break;
@@ -328,6 +321,14 @@ class CasketHelper extends EventEmitter {
                 let task = this.#moveinTasks.get(key);
                 this.#executingTasks.set(task.item_id, task);
                 this.#moveinTasks.delete(key);
+            }
+            for (var key of this.#moveoutTasks.keys()) {
+                if (this.#executingTasks.size >= 20) {
+                    break;
+                }
+                let task = this.#moveoutTasks.get(key);
+                this.#executingTasks.set(task.item_id, task);
+                this.#moveoutTasks.delete(key);
             }
         }
         let i = 1;
