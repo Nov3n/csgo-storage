@@ -8,6 +8,7 @@ const { OriginItemUtil, CasketHelper, CsgoItem } = require('./src/js/util/item_u
 const { PreAutoMovein } = require('./src/js/csgo_storage')
 let logConf = JSON.parse(fs.readFileSync("./conf/log_config.json", 'utf8'));
 let csgoConf = JSON.parse(fs.readFileSync("./conf/csgo_conf.json", 'utf8'));
+let storedAccount = JSON.parse(fs.readFileSync("./conf/stored_account.json", 'utf8'));
 let itemInfo = JSON.parse(fs.readFileSync("./conf/item_info.json", 'utf-8'));
 log4js.configure(logConf);
 const logger = log4js.getLogger("default");
@@ -121,14 +122,28 @@ function createSteamClient() {
         steamClient.setPersona(SteamUser.EPersonaState.Invisible);
         steamClient.gamesPlayed([730], true);
         if (rmbPasswd) {
-            fs.writeFile('./conf/account.json', JSON.stringify(steamAccount), (err) => {
+            let lastLoginAccount = storedAccount["lastLogin"];
+            if (lastLoginAccount === null || lastLoginAccount === undefined) {
+                storedAccount["lastLogin"] = {};
+            }
+            let storedList = storedAccount["storedList"];
+            if (storedList === null || storedList === undefined) {
+                storedAccount["storedList"] = {};
+            }
+            let curAccount = storedAccount["storedList"][steamAccount.account];
+            if (curAccount === null || curAccount === undefined) {
+                storedAccount["storedList"][steamAccount.account] = {};
+                storedAccount["storedList"][steamAccount.account]["passwd"] = steamAccount.passwd;
+                storedAccount["storedList"][steamAccount.account]["remember"] = steamAccount.remember;
+            }
+            storedAccount["lastLogin"].account = steamAccount.account;
+            storedAccount["lastLogin"].passwd = steamAccount.passwd;
+            storedAccount["lastLogin"].remember = steamAccount.remember;
+            fs.writeFile('./conf/stored_account.json', JSON.stringify(storedAccount, null, "\t"), (err) => {
                 if (err) {
                     console.log("Remember Passwd Failed");
                 }
             });
-        }
-        else {
-            fs.writeFile('./conf/account.json', JSON.stringify(steamAccount), (err) => { });
         }
     });
     steamClient.on('steamGuard', async (domain, callback, lastCodeWrong) => {
@@ -224,8 +239,8 @@ ipcMain.on('autoMoveinCond', async (event, mp) => {
     for (let key of mp.keys()) {
         mpTmp[key] = mp.get(key);
     }
-    saveMp["autoMoveinCond"] = JSON.stringify(mpTmp);
-    fs.writeFile('./conf/csgo_conf.json', JSON.stringify(saveMp), function (err) { if (err) { console.log("Write File err") } });
+    saveMp["autoMoveinCond"] = JSON.stringify(mpTmp, null, "\t");
+    fs.writeFile('./conf/csgo_conf.json', JSON.stringify(saveMp, null, "\t"), function (err) { if (err) { console.log("Write File err") } });
     autoMoveinCondMap = mp;
 });
 
@@ -237,8 +252,8 @@ ipcMain.on('numKeepCond', async (event, mp) => {
     for (let key of mp.keys()) {
         mpTmp[key] = mp.get(key);
     }
-    saveMp["numKeepCond"] = JSON.stringify(mpTmp);
-    fs.writeFile('./conf/csgo_conf.json', JSON.stringify(saveMp), function (err) { if (err) { console.log("Write File err") } });
+    saveMp["numKeepCond"] = JSON.stringify(mpTmp, null, "\t");
+    fs.writeFile('./conf/csgo_conf.json', JSON.stringify(saveMp, null, "\t"), function (err) { if (err) { console.log("Write File err") } });
     numKeepCondMap = mp;
     if (csgoCasketHelper) {
         csgoCasketHelper.setNumKeepCond(mp);

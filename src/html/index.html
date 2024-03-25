@@ -12,7 +12,9 @@
 <body style="background-image: url(../img/index_background.jpg);background-size:100% 100%;">
 	<h1 style="color: chartreuse;">NovenStorage</h1>
 	<form>
-		<input style="width: 200px;" id="account" type="text" placeholder="Steam账号" />
+		<input style="width: 200px;" id="account" type="text" placeholder="Steam账号" onchange="AccountChanged()" list="accountList" />
+		<datalist id="accountList">
+		</datalist>
 		<br />
 		<input style="width: 200px;" id="passwd" type="password" placeholder="Steam密码" />
 		<br />
@@ -26,6 +28,7 @@
 	<script>
 		const { ipcRenderer } = require('electron');
 		const fs = require('fs');
+		var storedAccount = new Map();
 		function SteamLogin() {
 			let account = document.getElementById("account");
 			let passwd = document.getElementById("passwd");
@@ -33,6 +36,18 @@
 			let rememberPasswd = document.getElementById("rememberPasswd");
 			let autoRelogin = document.getElementById("autoRelogin");
 			ipcRenderer.send('steamLogin', account.value, passwd.value, twoFactorCode.value, rememberPasswd.checked, autoRelogin.checked);
+		}
+		function AccountChanged() {
+			// TODO 可以搞一个下拉框类型的
+			let account = document.getElementById("account");
+			let storedList = storedAccount.storedList;
+			if (storedList[account.value]) {
+				window.alert("已自动填充对应密码");
+				let passwd = document.getElementById("passwd");
+				let rememberPasswd = document.getElementById("rememberPasswd");
+				passwd.value = storedList[account.value].passwd;
+				rememberPasswd.value = storedList[account.value].remember;
+			}
 		}
 		ipcRenderer.on('steamGuard', async (event) => {
 			window.alert("令牌错误或者未输入令牌");
@@ -42,7 +57,8 @@
 		});
 		function Init() {
 			try {
-				let accountInfo = JSON.parse(fs.readFileSync('./conf/account.json'));
+				storedAccount = JSON.parse(fs.readFileSync('./conf/stored_account.json'));
+				let accountInfo = storedAccount.lastLogin;
 				if (accountInfo.remember) {
 					let account = document.getElementById("account");
 					account.value = accountInfo.account ? accountInfo.account : "";
@@ -51,6 +67,15 @@
 				}
 				let rememberPasswd = document.getElementById("rememberPasswd");
 				rememberPasswd.checked = accountInfo.remember;
+				let accountList = document.getElementById("accountList");
+				let storedList = storedAccount.storedList;
+				if (storedList) {
+					for (var account in storedList) {
+						let opt = document.createElement('Option');
+						opt.value = account;
+						accountList.appendChild(opt);
+					}
+				}
 			}
 			catch (err) { }
 		}
