@@ -220,6 +220,7 @@
         ipcRenderer.on('accountInfoOnTimer', async (event, accountInfo) => {
             let ele = document.getElementById("account");
             ele.value = accountInfo.account;
+            document.title = accountInfo.account;
         });
         ipcRenderer.on('moveTaskOnTimer', async (event, moveinTaskSize, moveoutTaskSize, executingTaskSize) => {
             let inEle = document.getElementById("moveinTaskDivText");
@@ -339,7 +340,7 @@
             htmlConditionP.appendChild(htmlConditionPTradable);
             htmlConditionP.appendChild(htmlConditionPKeepNum);
             htmlConditionP.appendChild(htmlDeleteButton);
-            
+
             numKeepCondMap.set(htmlConditionP.id, { defIndex: defIndex, tradable: tradable, keepNum: keepNum });
 
             return htmlConditionP
