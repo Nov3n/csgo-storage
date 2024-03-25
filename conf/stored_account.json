@@ -1,0 +1,13 @@
+{
+	"lastLogin": {
+		"account": "test",
+		"passwd": "test",
+		"remember": true
+	},
+	"storedList": {
+		"test": {
+			"passwd": "test",
+			"remember": true
+		}
+	}
+}
