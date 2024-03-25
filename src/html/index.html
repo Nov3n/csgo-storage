@@ -11,10 +11,18 @@
 
 <body style="background-image: url(../img/index_background.jpg);background-size:100% 100%;">
 	<h1 style="color: chartreuse;">NovenStorage</h1>
+	<style>
+		#accountList {
+			height: 100px;
+			overflow: auto;
+		}
+	</style>
 	<form>
-		<input style="width: 200px;" id="account" type="text" placeholder="Steam账号" onchange="AccountChanged()" list="accountList" />
+		<input style="width: 200px;" id="account" type="text" placeholder="Steam账号" onchange="AccountChanged()"
+			list="accountList" />
 		<datalist id="accountList">
 		</datalist>
+
 		<br />
 		<input style="width: 200px;" id="passwd" type="password" placeholder="Steam密码" />
 		<br />
@@ -46,7 +54,10 @@
 				let passwd = document.getElementById("passwd");
 				let rememberPasswd = document.getElementById("rememberPasswd");
 				passwd.value = storedList[account.value].passwd;
-				rememberPasswd.value = storedList[account.value].remember;
+				rememberPasswd.checked = storedList[account.value].remember;
+			} else {
+				let passwd = document.getElementById("passwd");
+				passwd.value = "";
 			}
 		}
 		ipcRenderer.on('steamGuard', async (event) => {
