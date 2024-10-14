@@ -70,6 +70,7 @@
                 <option value="2">不限</option>
             </select>
             <button onclick="AddAutoMoveinCond()" type="button">添加</button>
+            <input type="checkbox" id="autoMoveinCase" onclick="AutoMoveinCaseChange()" /><label for="memory" style="color: chartreuse;">自动移入箱子</label>
         </p>
 
         <!-- 添加的条件块 -->
@@ -357,6 +358,12 @@
 
             autoMoveinConditions.appendChild(conditionP);
             SendAutoMoveinConds();
+        }
+
+
+        function AutoMoveinCaseChange() {
+            let autoMoveinCase = Number(document.getElementById("autoMoveinCase").checked);
+            ipcRenderer.send('autoMoveinCase', autoMoveinCase);
         }
 
         function AddNumKeepCond() {

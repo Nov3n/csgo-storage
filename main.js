@@ -47,12 +47,13 @@ let autoMoveinCondMap = null;
 let numKeepCondMap = null;
 let rmbPasswd = false;
 let autoRelogin = false;
+let autoMoveinCase = false;
 let steamAccount = null;
 
 
 function isAutoMovein(item) {
     let res = false;
-    if (PreAutoMovein(item)) {
+    if (autoMoveinCase && PreAutoMovein(item)) {
         res = true;
     }
     if (autoMoveinCondMap != null && autoMoveinCondMap.size != 0) {
@@ -243,6 +244,12 @@ ipcMain.on('autoMoveinCond', async (event, mp) => {
     fs.writeFile('./conf/csgo_conf.json', JSON.stringify(saveMp, null, "\t"), function (err) { if (err) { console.log("Write File err") } });
     autoMoveinCondMap = mp;
 });
+
+// if auto move in cases
+ipcMain.on('autoMoveinCase', async (event, autoMoveinCase_) => {
+    autoMoveinCase = autoMoveinCase_;
+    console.log(autoMoveinCase)
+})
 
 // 库存页面返回的物品数量保持条件
 ipcMain.on('numKeepCond', async (event, mp) => {
